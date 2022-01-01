@@ -1,0 +1,49 @@
+#!/bin/bash
+
+# Exit on any error
+set -e
+
+if [[ $# -lt 3 ]]; then
+	echo -e "username, password and disk_name arguments required\nsyntax: installer username password disk_name"
+	exit 1
+fi
+
+export username="$1"
+export password="$2"
+export disk_name="$3"
+
+partition_func() {
+	parted -s "$disk_name" \
+		mklabel gpt \
+		mkpart ESP fat32 0% 1025MiB \
+		mkpart root ext4 1025MiB 151GiB \
+		mkpart home ext4 151GiB 100% \
+		set 1 boot on
+}
+
+format_func() {
+	mkfs.fat -F32 "${disk_name}1"
+	mkfs.ext4 "${disk_name}2"
+	mkfs.ext4 "${disk_name}3"
+}
+
+mount_func() {
+	mount "${disk_name}2" /mnt
+	mkdir /mnt/home
+	mkdir /mnt/etc
+	mount "${disk_name}3" /mnt/home
+	genfstab -U -p /mnt >>/mnt/etc/fstab
+}
+
+partition_func
+format_func
+mount_func
+echo "y" | pacman -S archlinux-keyring
+echo "y" | pacstrap -i /mnt base
+cp -r ~/archbot/ /mnt/root
+arch-chroot /mnt bash /root/archbot/chroot_installer "$disk_name" "$username" "$password"
+echo -e "\nINSTALATION SUCCESSFUL\n"
+echo -e "type reboot and remove the install media to get into your installed system\n"
+echo -e "bye\n"
+echo -e "Don't mind the errors below it's normal\n"
+umount -a

@@ -1,0 +1,97 @@
+#!/bin/bash
+locale_func() {
+	echo -e "en_IN UTF-8" >>/etc/locale.gen
+	locale-gen
+	echo -e "LANG=en_IN.UTF-8" >>/etc/locale.conf
+	timedatectl set-timezone Asia/Kolkata
+}
+
+usr_passwd_func() {
+	echo -e "root:$password" | chpasswd
+	useradd -m -g users -G wheel "$username"
+	echo -e "$username:$password" | chpasswd
+	sed -i "s/# %wheel ALL=(ALL) ALL/%wheel ALL=(ALL) ALL/" /etc/sudoers
+}
+services_func() {
+	systemctl enable NetworkManager
+	systemctl enable wpa_supplicant
+}
+
+dwm_func() {
+	cd /home/"$username"/.config/dwm
+	make clean install
+	make clean
+	cd
+}
+
+dwmblocks_func() {
+	cd /home/"$username"/.config/dwmblocks
+	make clean install
+	make clean
+	cd
+}
+
+usr_conf_func() {
+	su "$username" <<EOF
+        cd
+        curl -fLo /home/"$username"/.local/share/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+        git clone https://github.com/andsens/homeshick.git /home/"$username"/.homesick/repos/homeshick
+        /home/"$username"/.homesick/repos/homeshick/bin/homeshick -f -b clone yogeshdcool/dotfiles
+        /home/"$username"/.homesick/repos/homeshick/bin/homeshick link
+        git clone https://aur.archlinux.org/yay-bin.git
+        cd yay-bin || exit
+        makepkg
+	    cd
+	    git clone https://aur.archlinux.org/nerd-fonts-source-code-pro.git
+	    cd nerd-fonts-source-code-pro
+	    makepkg
+	
+EOF
+}
+misc_func() {
+	chsh --shell /usr/bin/zsh "$username"
+	sed -i "/#Misc options/a ILoveCandy" /etc/pacman.conf
+	sed -i "s/#Color/Color/" /etc/pacman.conf
+	sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
+	sed -i "/## Defaults specification/a Defaults insults" /etc/sudoers
+	echo 'Section "InputClass"
+        Identifier "libinput touchpad catchall"
+        MatchIsTouchpad "on"
+        MatchDevicePath "/dev/input/event*"
+        Driver "libinput"
+        Option "Tapping" "true"
+EndSection' >/etc/X11/xorg.conf.d/30-touchpad.conf
+	mkdir -p /etc/systemd/system/getty@tty1.service.d
+	echo -e "[Service]\nType=simple\nExecStart=\nExecStart=/usr/bin/agetty --autologin $username --noclear %I \$TERM" >/etc/systemd/system/getty@tty1.service.d/override.conf
+	pacman --noconfirm -U /home/yogesh/yay-bin/*pkg.tar.zst
+	pacman --noconfirm -U /home/yogesh/nerd-fonts-source-code-pro/*pkg.tar.zst
+	amixer sset Master unmute
+	amixer sset Master 100%
+}
+
+last_func() {
+	rm -rf ~/archbot
+	exit
+}
+
+grub_func() {
+	mkdir -p /boot/EFI
+	mount "${disk_name}1" /boot/EFI
+	grub-install --target=x86_64-efi --bootloader-id=grub_uefi --recheck
+	mkdir /boot/grub/locale
+	cp /usr/share/locale/en\@quot/LC_MESSAGES/grub.mo /boot/grub/locale/en.mo
+	grub-mkconfig -o /boot/grub/grub.cfg
+}
+
+cd
+pacman --needed --noconfirm -S $(cat /root/archbot/packages | cut -d' ' -f1)
+mkinitcpio -p linux
+locale_func
+usr_passwd_func
+services_func
+usr_conf_func
+dwm_func
+dwmblocks_func
+grub_func
+misc_func
+last_func
