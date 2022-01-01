@@ -3,7 +3,6 @@ locale_func() {
 	echo -e "en_IN UTF-8" >>/etc/locale.gen
 	locale-gen
 	echo -e "LANG=en_IN.UTF-8" >>/etc/locale.conf
-	timedatectl set-timezone Asia/Kolkata
 }
 
 usr_passwd_func() {
@@ -63,6 +62,7 @@ misc_func() {
 EndSection' >/etc/X11/xorg.conf.d/30-touchpad.conf
 	mkdir -p /etc/systemd/system/getty@tty1.service.d
 	echo -e "[Service]\nType=simple\nExecStart=\nExecStart=/usr/bin/agetty --autologin $username --noclear %I \$TERM" >/etc/systemd/system/getty@tty1.service.d/override.conf
+	timedatectl set-timezone Asia/Kolkata
 	pacman --noconfirm -U /home/yogesh/yay-bin/*pkg.tar.zst
 	pacman --noconfirm -U /home/yogesh/nerd-fonts-source-code-pro/*pkg.tar.zst
 	amixer sset Master unmute
