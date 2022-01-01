@@ -41,12 +41,15 @@ usr_conf_func() {
         cd yay-bin || exit
         makepkg
 	    cd
+        rm -rf yay-bin
 	    git clone https://aur.archlinux.org/nerd-fonts-source-code-pro.git
 	    cd nerd-fonts-source-code-pro
 	    makepkg
-	
+        cd
+        rm -rf nerd-fonts-source-code-pro
 EOF
 }
+
 misc_func() {
 	chsh --shell /usr/bin/zsh "$username"
 	sed -i "/#Misc options/a ILoveCandy" /etc/pacman.conf
