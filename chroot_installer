@@ -41,12 +41,10 @@ usr_conf_func() {
         cd yay-bin || exit
         makepkg
 	    cd
-        rm -rf yay-bin
 	    git clone https://aur.archlinux.org/nerd-fonts-source-code-pro.git
 	    cd nerd-fonts-source-code-pro
 	    makepkg
         cd
-        rm -rf nerd-fonts-source-code-pro
 EOF
 }
 
@@ -68,6 +66,8 @@ EndSection' >/etc/X11/xorg.conf.d/30-touchpad.conf
     timedatectl set-timezone Asia/Calcutta
 	pacman --noconfirm -U /home/yogesh/yay-bin/*pkg.tar.zst
 	pacman --noconfirm -U /home/yogesh/nerd-fonts-source-code-pro/*pkg.tar.zst
+	rm -rf /home"$username"/yay-bin
+	rm -rf /home/"$username"/nerd-fonts-source-code-pro
 	amixer sset Master unmute
 	amixer sset Master 100%
 }
