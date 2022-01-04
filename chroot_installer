@@ -50,7 +50,7 @@ EOF
 
 misc_func() {
 	chsh --shell /usr/bin/zsh "$username"
-	sed -i "/#Misc options/a ILoveCandy" /etc/pacman.conf
+	sed -i "/# Misc options/a ILoveCandy" /etc/pacman.conf
 	sed -i "s/#Color/Color/" /etc/pacman.conf
 	sed -i "s/#VerbosePkgLists/VerbosePkgLists/" /etc/pacman.conf
 	sed -i "/## Defaults specification/a Defaults insults" /etc/sudoers
