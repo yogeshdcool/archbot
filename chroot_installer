@@ -9,7 +9,7 @@ usr_passwd_func() {
 	echo -e "root:$password" | chpasswd
 	useradd -m -g users -G wheel "$username"
 	echo -e "$username:$password" | chpasswd
-    sed -i "s/# %wheel ALL=(ALL) NOPASSWD ALL/%wheel ALL=(ALL) NOPASSWD ALL/" /etc/sudoers
+    sed -i "s/# %wheel ALL=(ALL) NOPASSWD: ALL/%wheel ALL=(ALL) NOPASSWD : ALL/" /etc/sudoers
 }
 services_func() {
 	systemctl enable NetworkManager
